@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProTools Dub MVP - Audio Post-Production</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-input-button {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            transition: background 0.3s;
+        }
+        
+        .file-input-button:hover {
+            background: #5568d3;
+        }
+        
+        .file-name {
+            margin-top: 8px;
+            color: #666;
+            font-size: 13px;
+            font-style: italic;
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+        }
+        
+        .info-box li {
+            margin-bottom: 5px;
+        }
+        
+        button[type=submit] {
+            background: #764ba2;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        button[type=submit]:hover {
+            background: #663a8f;
+        }
+        
+        button[type=submit]:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .status.processing {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .download-button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 25px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        
+        .download-button:hover {
+            background: #218838;
+        }
+        
+        .progress {
+            margin-top: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            width: 0%;
+            transition: width 0.3s;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 ProTools Dub MVP</h1>
+        <p class="subtitle">Automated Multi-Track Audio Post-Production</p>
+        
+        <div class="info-box">
+            <h3>Supported Features:</h3>
+            <ul>
+                <li>Upload ZIP with 2-5 WAV stems (voice.wav, sfx.wav, etc.)</li>
+                <li>Automatic noise reduction using Librosa</li>
+                <li>Normalization to -24 LUFS</li>
+                <li>Optional JSON config for custom processing</li>
+                <li>Final mixed output WAV file</li>
+            </ul>
+        </div>
+        
+        <form id="uploadForm">
+            <div class="upload-section">
+                <label for="audioFile">Audio File (.ptx or .zip):</label>
+                <div class="file-input-wrapper">
+                    <div class="file-input-button">Choose File</div>
+                    <input type="file" id="audioFile" name="file" accept=".ptx,.zip" required>
+                </div>
+                <div id="audioFileName" class="file-name"></div>
+            </div>
+            
+            <div class="upload-section">
+                <label for="configFile">Config File (optional .json):</label>
+                <div class="file-input-wrapper">
+                    <div class="file-input-button">Choose Config (Optional)</div>
+                    <input type="file" id="configFile" name="config" accept=".json">
+                </div>
+                <div id="configFileName" class="file-name"></div>
+            </div>
+            
+            <button type="submit" id="submitBtn">Process Audio</button>
+            
+            <div id="status" class="status"></div>
+        </form>
+    </div>
+    
+    <script>
+        const audioFileInput = document.getElementById('audioFile');
+        const configFileInput = document.getElementById('configFile');
+        const audioFileName = document.getElementById('audioFileName');
+        const configFileName = document.getElementById('configFileName');
+        const uploadForm = document.getElementById('uploadForm');
+        const statusDiv = document.getElementById('status');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        audioFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                audioFileName.textContent = `Selected: ${this.files[0].name}`;
+            }
+        });
+        
+        configFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                configFileName.textContent = `Selected: ${this.files[0].name}`;
+            }
+        });
+        
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('file', audioFileInput.files[0]);
+            
+            if (configFileInput.files.length > 0) {
+                formData.append('config', configFileInput.files[0]);
+            }
+            
+            submitBtn.disabled = true;
+            statusDiv.className = 'status processing';
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = `
+                <div>Processing your audio files...</div>
+                <div class="progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px; font-size: 12px;">
+                    This may take a few minutes depending on file size.
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        <div>✓ Processing complete!</div>
+                        <a href="${result.download_url}" class="download-button">Download Final Mix</a>
+                    `;
+                } else {
+                    throw new Error(result.error || 'Processing failed');
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Error: ${error.message}`;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
